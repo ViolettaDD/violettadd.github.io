@@ -93,6 +93,17 @@
   --color-ticket-sage: #86b096;
   --color-ticket-mustard: #f7cf74;
 
+  /* Jukebox (tomados de la ilustración de la rocola) */
+  --color-neon-blue: #5d63f0;
+  --color-neon-violet: #a64cf5;
+  --color-curtain-500: #9b1b1b;
+  --color-curtain-700: #6e0f10;
+  --color-curtain-900: #4a0a0b;
+  --color-brass-300: #f2d27a;
+  --color-brass-500: #c8962a;
+  --color-brass-700: #7c5a12;
+  --color-jukebox-wood: #b5793a;
+
   /* Placeholders: azul "plano técnico", fuera de la paleta a propósito */
   --color-placeholder: #1d43b8;
   --color-placeholder-bg: #eef2ff;

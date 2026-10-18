@@ -1,0 +1,199 @@
+---
+/**
+ * MediaEmbed: medio principal con "facade". Para YouTube, Vimeo e itch.io muestra un póster con
+ * botón de play y carga el iframe solo al hacer clic (sin JS, el póster enlaza al sitio externo).
+ * mp4 local: <video> muted, loop, playsinline, preload="none", con controles.
+ * image: <Image> optimizada (AVIF/WebP, srcset).
+ * Si `media` falta o es placeholder, muestra un <Placeholder kind="video">.
+ *
+ * Props:
+ * - media?: Media                 ver src/lib/media.ts (campo `media` del frontmatter)
+ * - ratio?: string                proporción del contenedor (por defecto "16/9", o la de itch)
+ * - sizes?: string                atributo sizes de las imágenes
+ * - eager?: boolean               true si está en el primer pantallazo (sin lazy loading)
+ * - pendingLabel?: string         texto del placeholder cuando falta el medio
+ * - pendingSource?: string        dónde se edita (archivo → campo)
+ * - id?: string                   id del contenedor (lo usa el jukebox)
+ * - class?: string
+ */
+import { Image } from 'astro:assets';
+import Placeholder from './Placeholder.astro';
+import { embedUrls, isMediaPending, type Media } from '@/lib/media';
+import { t } from '@/i18n';
+
+interface Props {
+  media?: Media;
+  ratio?: string;
+  sizes?: string;
+  eager?: boolean;
+  pendingLabel?: string;
+  pendingSource?: string;
+  id?: string;
+  class?: string;
+}
+
+const {
+  media,
+  ratio: ratioProp,
+  sizes = '(min-width: 72rem) 72rem, 100vw',
+  eager = false,
+  pendingLabel = 'Video principal',
+  pendingSource = 'frontmatter → media',
+  id,
+  class: className,
+} = Astro.props;
+
+const pending = isMediaPending(media);
+const ratio = ratioProp ?? (media?.type === 'itch' && media.ratio ? media.ratio : '16/9');
+const urls = media && !pending ? embedUrls(media) : null;
+const loading = eager ? 'eager' : 'lazy';
+const playLabel =
+  media && media.type === 'itch' ? t.media.playGame(media.title) : t.media.playVideo(media?.title ?? '');
+const ytPoster =
+  media?.type === 'youtube' && !media.poster && !pending
+    ? `https://i.ytimg.com/vi/${encodeURIComponent(media.id)}/hqdefault.jpg`
+    : undefined;
+---
+
+{
+  pending ? (
+    <Placeholder
+      kind="video"
+      ratio={ratio}
+      label={pendingLabel}
+      format="YouTube (recomendado) o Vimeo: solo el ID. Póster 1280×720 (16:9). Clips mp4 < 10 MB."
+      source={pendingSource}
+      class={className}
+    />
+  ) : media!.type === 'image' ? (
+    <figure class:list={['media', className]} style={`--media-ratio: ${ratio}`} id={id}>
+      <Image src={media!.src} alt={media!.alt} sizes={sizes} loading={loading} class="media__img" />
+    </figure>
+  ) : media!.type === 'mp4' ? (
+    <div class:list={['media', className]} style={`--media-ratio: ${ratio}`} id={id}>
+      <video
+        class="media__video"
+        src={media!.src}
+        poster={media!.poster?.src}
+        title={media!.title}
+        muted
+        loop
+        playsinline
+        controls
+        preload="none"
+      />
+    </div>
+  ) : (
+    <div
+      class:list={['media', 'media--facade', className]}
+      style={`--media-ratio: ${ratio}`}
+      id={id}
+      data-embed
+      data-embed-src={urls!.embed}
+      data-embed-title={media!.title}
+    >
+      {media!.poster ? (
+        <Image
+          src={media!.poster}
+          alt={media!.alt ?? ''}
+          sizes={sizes}
+          loading={loading}
+          class="media__img"
+        />
+      ) : ytPoster ? (
+        <img src={ytPoster} alt={media!.alt ?? ''} width="480" height="360" loading={loading} class="media__img" />
+      ) : (
+        <span class="media__blank" aria-hidden="true">
+          {media!.title}
+        </span>
+      )}
+      <a class="media__play" href={urls!.external} data-embed-trigger>
+        <span class="media__play-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M8 5l11 7-11 7z" />
+          </svg>
+        </span>
+        <span class="visually-hidden">
+          {playLabel}. {t.media.loadEmbed}
+        </span>
+      </a>
+    </div>
+  )
+}
+
+<script>
+  import { initMediaEmbeds } from '@/scripts/media-embed';
+  initMediaEmbeds();
+</script>
+
+<style>
+  .media {
+    position: relative;
+    aspect-ratio: var(--media-ratio, 16/9);
+    overflow: hidden;
+    border: var(--border-thick) solid var(--color-ink-900);
+    border-radius: var(--radius-md);
+    background: var(--color-ink-900);
+  }
+
+  .media__img,
+  .media__video,
+  .media :global(iframe) {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    object-fit: cover;
+    border: 0;
+  }
+
+  .media__blank {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    padding: var(--space-5);
+    background: var(--pattern-chess);
+    --chess-size: 3rem;
+    color: transparent;
+  }
+
+  .media__play {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: linear-gradient(180deg, transparent 50%, rgb(27 18 24 / 0.35));
+    border-radius: 0;
+  }
+
+  .media__play:focus-visible {
+    outline: 4px solid var(--color-mustard-300);
+    outline-offset: -8px;
+  }
+
+  .media__play-icon {
+    display: grid;
+    place-items: center;
+    width: clamp(3.5rem, 10vw, 5rem);
+    aspect-ratio: 1;
+    border: var(--border-thick) solid var(--color-ink-900);
+    border-radius: 50%;
+    background: var(--color-violet-600);
+    box-shadow: var(--shadow-hard-md);
+    color: var(--color-white);
+    transition:
+      transform var(--duration-base) var(--ease-spring),
+      box-shadow var(--duration-fast) var(--ease-out);
+  }
+
+  .media__play-icon svg {
+    width: 45%;
+    height: 45%;
+    margin-inline-start: 8%;
+    fill: currentColor;
+  }
+
+  .media__play:hover .media__play-icon {
+    transform: scale(1.08);
+    box-shadow: var(--shadow-hard-lg);
+  }
+</style>
