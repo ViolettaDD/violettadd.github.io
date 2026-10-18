@@ -1,0 +1,18 @@
+---
+description: Uso de los tokens de diseño y estilo visual retro-diner
+globs: src/**/*.astro,src/**/*.css
+alwaysApply: false
+---
+
+# Tokens y estilo
+
+- Usar siempre variables de `src/styles/tokens.css`: `--color-*` (preferir los roles semánticos `--color-text`, `--color-link`…), `--step-*` para tamaños de fuente, `--space-*` para espaciado (escala 4/8 px), `--radius-*`, `--shadow-hard-*`, `--z-*`, `--duration-*`.
+- No escribir colores hex, px sueltos de tipografía ni z-index numéricos en componentes. Si falta un token, agregarlo a `tokens.css`.
+- CSS mobile-first: estilos base para móvil y `@media (min-width: …em)` para crecer. Breakpoints de referencia: 36em, 48em, 64em, 80em.
+- Prohibido `!important`. Prohibidos anchos fijos de layout: usar `.container`, `min()`, `clamp()`, grid/flex.
+- Fuentes: `--font-display` solo para logo, títulos y etiquetas cortas; `--font-body` para todo texto de lectura. Nunca párrafos en fuente display o manuscrita.
+- Texturas y formas con CSS/SVG (`surfaces.css`): papel, madera, corcho, ajedrez, bordes rasgados (`.edge-torn-*`). No usar PNG para fondos.
+- Sombras retro: offset duras (`--shadow-hard-*`); en elementos con `mask`, usar `filter: var(--drop-hard-md)` en un contenedor.
+- "El diner es un lenguaje visual, no un laberinto": máximo un momento memorable por página; el resto, limpio.
+- Movimiento sutil (elevación/rotación leve en hover, 120–320 ms). Las duraciones se anulan con `prefers-reduced-motion` desde los tokens: usarlas siempre.
+- Contraste: verificar en `/_styleguide` antes de introducir una combinación texto/fondo nueva. `--color-teal-500` y `--color-mauve-500` no sirven para texto pequeño.

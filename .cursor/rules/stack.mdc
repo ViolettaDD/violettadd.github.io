@@ -1,0 +1,24 @@
+---
+description: Stack técnico del portafolio de Vio y dependencias permitidas
+alwaysApply: true
+---
+
+# Stack
+
+- Astro (estable más reciente), salida 100 % estática. Node ≥ 22.22 (ver `.nvmrc`).
+- CSS plano con custom properties (`src/styles/tokens.css`). Sin Tailwind, Sass ni librerías de UI.
+- JavaScript vanilla mínimo en `src/scripts/*.ts`, cargado desde el componente que lo usa con `<script>` (Astro lo empaqueta). Sin frameworks de JS ni islas.
+- Contenido: Content Collections con schema Zod en `src/content.config.ts` (`import { z } from 'astro/zod'`). Proyectos en MDX en `src/content/projects/`.
+- Imágenes: siempre `astro:assets` (`<Image>` / `<Picture>`) con `width`/`height`, `alt` y lazy loading salvo en el primer pantallazo. Fuentes de imagen en `src/assets/`.
+- Fuentes self-hosted en `public/fonts/` (woff2, subset latin). Licencias en `docs/FONTS.md`. Nunca servir fuentes con licencia "personal use".
+- Despliegue: GitHub Pages con `.github/workflows/deploy.yml` (push a `main` + `workflow_dispatch`). No publicar desde `rediseno`.
+
+## Dependencias
+
+Actuales: `astro`, `@astrojs/mdx`, `@astrojs/sitemap`, `sharp`; dev: `@astrojs/check`, `typescript`.
+Antes de agregar otra dependencia: justificarla y pedir aprobación a Vio. Preferir APIs nativas.
+
+## Verificación
+
+- `npm run build` (incluye `astro check`) debe terminar con 0 errores y 0 warnings.
+- Revisar visualmente a 360, 768 y 1280 px antes de dar por terminada una tarea visual.

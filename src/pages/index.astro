@@ -1,0 +1,17 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Placeholder from '@/components/Placeholder.astro';
+---
+
+<BaseLayout>
+  <section class="section container">
+    <h1>Vio</h1>
+    {/* TODO(vio): esta página se completa en la etapa (c). */}
+    <Placeholder
+      kind="text"
+      label="Contenido del inicio"
+      format="Hero, jukebox, destacados, sobre mí, contacto"
+      source="src/pages/index.astro"
+    />
+  </section>
+</BaseLayout>

@@ -1,0 +1,154 @@
+---
+/**
+ * Footer: banda de ajedrez + madera oscura. Repite la navegación, enlaza redes y CV.
+ * Sin props: lee src/data/site.ts y src/data/navigation.ts.
+ * Las redes con URL [POR COMPLETAR] no se enlazan: se muestra un único placeholder.
+ */
+import { Image } from 'astro:assets';
+import Placeholder from './Placeholder.astro';
+import vBadge from '@/assets/brand/v-badge.png';
+import { site } from '@/data/site';
+import { mainNav } from '@/data/navigation';
+import { cvLink } from '@/lib/cv';
+import { isPending } from '@/lib/placeholders';
+import { t } from '@/i18n';
+
+const year = new Date().getFullYear();
+const socials = site.socials.filter((s) => !isPending(s.url));
+const cv = cvLink();
+---
+
+<footer class="site-footer on-dark">
+  <div class="chess-band" aria-hidden="true"></div>
+  <div class="site-footer__body surface--wood-dark">
+    <div class="container site-footer__grid">
+      <div class="site-footer__brand">
+        <a class="site-footer__logo" href="/">
+          <Image src={vBadge} alt="" width={56} densities={[1, 2]} />
+          <span>{site.name}</span>
+        </a>
+        <p class="site-footer__school">{site.school}</p>
+      </div>
+
+      <nav aria-label={t.a11y.footerNav}>
+        <ul class="site-footer__list" role="list">
+          <li><a href="/">{t.nav.home}</a></li>
+          {
+            mainNav.map((item) => (
+              <li>
+                <a href={item.href}>{item.label}</a>
+              </li>
+            ))
+          }
+          <li><a href={cv.href}>{t.nav.cv}</a></li>
+        </ul>
+      </nav>
+
+      <div>
+        {
+          socials.length > 0 ? (
+            <ul class="site-footer__list" role="list">
+              {socials.map((s) => (
+                <li>
+                  <a href={s.url} aria-label={t.a11y.socialLink(s.label)} rel="me noopener">
+                    {s.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <Placeholder
+              kind="link"
+              size="compact"
+              label="Enlaces a tus redes"
+              format="URL completa de cada perfil"
+              source="src/data/site.ts → socials"
+            />
+          )
+        }
+      </div>
+    </div>
+
+    <div class="container site-footer__legal">
+      <p>{t.footer.rights(year, site.name)}</p>
+      <p>
+        <a href={`mailto:${site.email}`}>{site.email}</a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    margin-block-start: auto;
+    color: var(--color-bone-50);
+  }
+
+  .site-footer a {
+    color: var(--color-bone-50);
+  }
+
+  .site-footer a:hover {
+    color: var(--color-mustard-300);
+  }
+
+  .site-footer__body {
+    padding-block: var(--space-7) var(--space-5);
+  }
+
+  .site-footer__grid {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  @media (min-width: 48em) {
+    .site-footer__grid {
+      grid-template-columns: 2fr 1fr 1fr;
+    }
+  }
+
+  .site-footer__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: var(--tap-min);
+    font-family: var(--font-display);
+    font-size: var(--step-1);
+    text-decoration: none;
+  }
+
+  .site-footer__logo img {
+    width: 56px;
+    height: auto;
+  }
+
+  .site-footer__school {
+    margin-block-start: var(--space-2);
+    font-size: var(--step--1);
+    color: var(--color-cream-200);
+  }
+
+  .site-footer__list {
+    display: grid;
+    gap: var(--space-1);
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-footer__list a {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+  }
+
+  .site-footer__legal {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-5);
+    margin-block-start: var(--space-6);
+    padding-block-start: var(--space-4);
+    border-block-start: 1px dashed rgb(255 248 231 / 0.4);
+    font-size: var(--step--1);
+  }
+</style>

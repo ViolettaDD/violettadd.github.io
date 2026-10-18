@@ -1,0 +1,282 @@
+---
+/**
+ * Header: barra sticky de papel con borde rasgado, logo (→ inicio), navegación y botón CV.
+ * En móvil (< 48em) el menú se pliega tras un botón "Menú" (patrón disclosure).
+ * Sin JavaScript, el botón no aparece y los enlaces se muestran siempre.
+ * Sin props: lee la navegación de src/data/navigation.ts y el CV de src/data/site.ts.
+ */
+import { Image } from 'astro:assets';
+import Button from './Button.astro';
+import vBadge from '@/assets/brand/v-badge.png';
+import { mainNav, isCurrent } from '@/data/navigation';
+import { cvLink } from '@/lib/cv';
+import { t } from '@/i18n';
+
+const pathname = Astro.url.pathname;
+const cv = cvLink();
+---
+
+<header class="site-header" data-site-header>
+  <div class="site-header__paper surface--paper edge-torn-bottom">
+    <div class="site-header__inner container container--wide">
+      <a class="brand" href="/" aria-current={pathname === '/' ? 'page' : undefined}>
+        <Image
+          class="brand__badge"
+          src={vBadge}
+          alt=""
+          width={44}
+          densities={[1, 2]}
+          loading="eager"
+        />
+        <span class="brand__name">Vio</span>
+        <span class="visually-hidden"> — {t.a11y.home}</span>
+      </a>
+
+      <button
+        class="nav-toggle"
+        type="button"
+        aria-expanded="false"
+        aria-controls="site-nav"
+        data-nav-toggle
+        hidden
+      >
+        <span class="nav-toggle__icon" aria-hidden="true"><span></span></span>
+        <span>{t.nav.menu}</span>
+      </button>
+
+      <nav id="site-nav" class="site-nav" aria-label={t.a11y.mainNav}>
+        <ul class="site-nav__list" role="list">
+          {
+            mainNav.map((item) => (
+              <li>
+                <a
+                  class="site-nav__link"
+                  href={item.href}
+                  aria-current={isCurrent(pathname, item.href) ? 'page' : undefined}
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+        <Button
+          class="site-nav__cv"
+          href={cv.href}
+          variant="secondary"
+          size="sm"
+          icon={cv.isPdf ? 'download' : undefined}
+        >
+          {t.nav.cv}
+        </Button>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<script>
+  import { initNav } from '@/scripts/nav';
+  initNav();
+</script>
+
+<style>
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    filter: drop-shadow(0 4px 6px rgb(27 18 24 / 0.25));
+  }
+
+  .site-header__paper {
+    --edge-size: 10px;
+    padding-block-end: var(--edge-size);
+  }
+
+  .site-header__inner {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2) var(--space-4);
+    min-height: var(--header-height);
+    padding-block: var(--space-2);
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--tap-min);
+    color: var(--color-violet-600);
+    text-decoration: none;
+  }
+
+  .brand__badge {
+    width: 44px;
+    height: auto;
+    transition: transform var(--duration-base) var(--ease-spring);
+  }
+
+  .brand:hover .brand__badge {
+    transform: rotate(-8deg) scale(1.05);
+  }
+
+  .brand__name {
+    font-family: var(--font-display);
+    font-size: var(--step-2);
+    line-height: 1;
+  }
+
+  .site-nav {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2) var(--space-4);
+  }
+
+  .site-nav__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-1);
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-nav__link {
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--tap-min);
+    padding-inline: var(--space-3);
+    color: var(--color-ink-900);
+    font-family: var(--font-display);
+    font-size: var(--step-0);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+  }
+
+  .site-nav__link:hover {
+    color: var(--color-violet-600);
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+    text-underline-offset: 0.3em;
+  }
+
+  .site-nav__link[aria-current='page'] {
+    color: var(--color-violet-600);
+    text-decoration: underline;
+    text-decoration-color: var(--color-teal-500);
+    text-decoration-thickness: 4px;
+    text-underline-offset: 0.3em;
+  }
+
+  .nav-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--tap-min);
+    min-width: var(--tap-min);
+    padding: var(--space-1) var(--space-3);
+    background: var(--color-bone-50);
+    border: var(--border-thick) solid var(--color-ink-900);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-hard-sm);
+    font-family: var(--font-display);
+    font-size: var(--step--1);
+  }
+
+  .nav-toggle[hidden] {
+    display: none;
+  }
+
+  .nav-toggle__icon,
+  .nav-toggle__icon::before,
+  .nav-toggle__icon::after,
+  .nav-toggle__icon span {
+    display: block;
+    width: 18px;
+    height: 3px;
+    background: currentColor;
+    border-radius: 2px;
+    transition:
+      transform var(--duration-base) var(--ease-out),
+      opacity var(--duration-fast);
+  }
+
+  .nav-toggle__icon {
+    position: relative;
+    background: transparent;
+  }
+
+  .nav-toggle__icon span {
+    position: absolute;
+    top: 0;
+  }
+
+  .nav-toggle__icon::before,
+  .nav-toggle__icon::after {
+    content: '';
+    position: absolute;
+    left: 0;
+  }
+
+  .nav-toggle__icon::before {
+    top: -6px;
+  }
+
+  .nav-toggle__icon::after {
+    top: 6px;
+  }
+
+  .nav-toggle[aria-expanded='true'] .nav-toggle__icon span {
+    opacity: 0;
+  }
+
+  .nav-toggle[aria-expanded='true'] .nav-toggle__icon::before {
+    transform: translateY(6px) rotate(45deg);
+  }
+
+  .nav-toggle[aria-expanded='true'] .nav-toggle__icon::after {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+
+  /* Móvil con JS: el menú se despliega como panel bajo la barra */
+  @media (max-width: 47.99em) {
+    :global(.js) .site-nav {
+      display: none;
+    }
+
+    :global(.js) [data-open] .site-nav {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      width: 100%;
+      padding-block: var(--space-2) var(--space-4);
+      border-block-start: var(--border-thin) dashed var(--color-ink-500);
+    }
+
+    :global(.js) [data-open] .site-nav__list {
+      flex-direction: column;
+    }
+
+    :global(.js) [data-open] .site-nav__link {
+      width: 100%;
+      min-height: 48px;
+      font-size: var(--step-1);
+    }
+
+    :global(.js) [data-open] .site-nav :global(.site-nav__cv) {
+      align-self: flex-start;
+    }
+  }
+
+  @media (min-width: 48em) {
+    .nav-toggle {
+      display: none;
+    }
+
+    .site-header__inner {
+      flex-wrap: nowrap;
+    }
+  }
+</style>
