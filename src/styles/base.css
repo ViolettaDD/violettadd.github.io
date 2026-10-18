@@ -90,6 +90,7 @@ h4 {
   letter-spacing: var(--tracking-display);
   color: var(--color-heading);
   text-wrap: balance;
+  overflow-wrap: break-word;
 }
 
 h1 {

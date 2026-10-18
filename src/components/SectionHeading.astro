@@ -1,0 +1,112 @@
+---
+/**
+ * SectionHeading: título de sección con antetítulo opcional y franja de marca.
+ * Props:
+ * - title: string
+ * - level?: 2 | 3            nivel del heading (por defecto 2). La página tiene un único h1.
+ * - eyebrow?: string         antetítulo corto en mayúsculas
+ * - id?: string              id del heading (para aria-labelledby de la sección)
+ * - align?: 'start' | 'center'
+ * - tone?: 'default' | 'on-dark'
+ * - class?: string
+ * Slots:
+ * - default: párrafo introductorio opcional
+ * - actions: enlace o botón alineado con el título (p. ej. "Ver todos")
+ */
+interface Props {
+  title: string;
+  level?: 2 | 3;
+  eyebrow?: string;
+  id?: string;
+  align?: 'start' | 'center';
+  tone?: 'default' | 'on-dark';
+  class?: string;
+}
+
+const { title, level = 2, eyebrow, id, align = 'start', tone = 'default', class: className } = Astro.props;
+const Heading = `h${level}` as 'h2' | 'h3';
+const hasIntro = Astro.slots.has('default');
+const hasActions = Astro.slots.has('actions');
+---
+
+<div class:list={['section-heading', `section-heading--${align}`, `section-heading--${tone}`, className]}>
+  <div class="section-heading__text">
+    {eyebrow && <p class="section-heading__eyebrow label">{eyebrow}</p>}
+    <Heading class="section-heading__title" id={id}>{title}</Heading>
+    <span class="section-heading__rule" aria-hidden="true"></span>
+    {
+      hasIntro && (
+        <div class="section-heading__intro">
+          <slot />
+        </div>
+      )
+    }
+  </div>
+  {
+    hasActions && (
+      <div class="section-heading__actions">
+        <slot name="actions" />
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .section-heading {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--space-4) var(--space-6);
+    margin-block-end: var(--space-6);
+  }
+
+  .section-heading--center {
+    justify-content: center;
+    text-align: center;
+  }
+
+  .section-heading__text {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
+    min-width: 0;
+    max-width: var(--measure);
+  }
+
+  .section-heading--center .section-heading__text {
+    justify-items: center;
+  }
+
+  .section-heading__eyebrow {
+    color: var(--color-violet-600);
+  }
+
+  .section-heading__rule {
+    display: block;
+    width: 7.5rem;
+    height: var(--space-2);
+    --stripe-width: 2.5rem;
+    background: var(--pattern-brand-stripes);
+    border: var(--border-thin) solid var(--color-ink-900);
+  }
+
+  .section-heading__intro {
+    color: var(--color-text-muted);
+    font-size: var(--step-1);
+    line-height: var(--leading-snug);
+    overflow-wrap: break-word;
+  }
+
+  .section-heading--on-dark .section-heading__title {
+    color: var(--color-bone-50);
+  }
+
+  .section-heading--on-dark .section-heading__eyebrow {
+    color: var(--color-mustard-300);
+  }
+
+  .section-heading--on-dark .section-heading__intro {
+    color: var(--color-cream-200);
+  }
+</style>

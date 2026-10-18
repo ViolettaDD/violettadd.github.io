@@ -1,0 +1,263 @@
+---
+/**
+ * TicketCard: tarjeta de proyecto con forma de ticket (muescas laterales, talón con el año,
+ * pin). Toda la tarjeta es clicable mediante el enlace del título.
+ * Props:
+ * - title: string
+ * - href: string
+ * - year: number | string
+ * - type?: string                  segunda línea del ticket ("Juego de Unity")
+ * - disciplines?: Discipline[]     games | animation | art | code
+ * - cover?: ImageMetadata          portada; si falta, placeholder 16:10
+ * - coverAlt?: string
+ * - coverSource?: string           dónde se edita la portada (para el placeholder)
+ * - color?: TicketColor            green | periwinkle | teal | salmon | sage | mustard
+ * - index?: number                 posición en la grilla: alterna la inclinación
+ * - headingLevel?: 2 | 3           (por defecto 3)
+ * - eager?: boolean                portada sin lazy loading (primer pantallazo)
+ * - class?: string
+ */
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import Tag from './Tag.astro';
+import Placeholder from './Placeholder.astro';
+import { t } from '@/i18n';
+
+export type Discipline = keyof typeof t.disciplines;
+export type TicketColor = 'green' | 'periwinkle' | 'teal' | 'salmon' | 'sage' | 'mustard';
+
+interface Props {
+  title: string;
+  href: string;
+  year: number | string;
+  type?: string;
+  disciplines?: Discipline[];
+  cover?: ImageMetadata;
+  coverAlt?: string;
+  coverSource?: string;
+  color?: TicketColor;
+  index?: number;
+  headingLevel?: 2 | 3;
+  eager?: boolean;
+  class?: string;
+}
+
+const {
+  title,
+  href,
+  year,
+  type,
+  disciplines = [],
+  cover,
+  coverAlt = '',
+  coverSource = 'frontmatter → cover',
+  color = 'mustard',
+  index = 0,
+  headingLevel = 3,
+  eager = false,
+  class: className,
+} = Astro.props;
+
+const tilts = [-1.5, 1, -0.75, 1.5, -1];
+const tilt = tilts[index % tilts.length];
+const Heading = `h${headingLevel}` as 'h2' | 'h3';
+---
+
+<article
+  class:list={['ticket', className]}
+  style={`--ticket-color: var(--color-ticket-${color}); --ticket-tilt: ${tilt}deg`}
+  data-disciplines={disciplines.join(' ')}
+>
+  <div class="ticket__shape">
+    <div class="ticket__main">
+      <div class="ticket__media">
+        {
+          cover ? (
+            <Image
+              src={cover}
+              alt={coverAlt}
+              widths={[360, 560, 800]}
+              sizes="(min-width: 64em) 22rem, (min-width: 36em) 45vw, 90vw"
+              loading={eager ? 'eager' : 'lazy'}
+              class="ticket__img"
+            />
+          ) : (
+            <Placeholder
+              kind="image"
+              size="compact"
+              ratio="16/10"
+              label={`Portada: ${title}`}
+              format="1600×1000 px (16:10)"
+              source={coverSource}
+            />
+          )
+        }
+      </div>
+      <Heading class="ticket__title">
+        <a class="ticket__link" href={href}>{title}</a>
+      </Heading>
+      {type && <p class="ticket__type">{type}</p>}
+      {
+        disciplines.length > 0 && (
+          <ul class="ticket__tags" role="list" aria-label={t.projects.disciplines}>
+            {disciplines.map((d) => (
+              <Tag as="li" variant="discipline" tone={d}>
+                {t.disciplines[d]}
+              </Tag>
+            ))}
+          </ul>
+        )
+      }
+    </div>
+    <div class="ticket__stub">
+      <span class="visually-hidden">{t.projects.year}:</span>
+      <span class="ticket__year">{year}</span>
+    </div>
+  </div>
+  <span class="ticket__pin" aria-hidden="true"></span>
+</article>
+
+<style>
+  .ticket {
+    position: relative;
+    filter: drop-shadow(4px 5px 0 rgb(27 18 24 / 0.55));
+    transform: rotate(var(--ticket-tilt));
+    transition:
+      transform var(--duration-base) var(--ease-spring),
+      filter var(--duration-base) var(--ease-out);
+  }
+
+  .ticket:hover,
+  .ticket:focus-within {
+    transform: translateY(var(--hover-lift)) rotate(calc(var(--ticket-tilt) * 0.3));
+    filter: drop-shadow(7px 9px 0 rgb(27 18 24 / 0.5));
+  }
+
+  .ticket__shape {
+    --notch: 14px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    background: var(--ticket-color);
+    background-image: var(--texture-paper);
+    border-radius: var(--radius-sm);
+    /* Muescas semicirculares a media altura en ambos lados */
+    mask:
+      radial-gradient(circle at 0 50%, transparent var(--notch), #000 calc(var(--notch) + 0.5px)) left / 51% 100%
+        no-repeat,
+      radial-gradient(circle at 100% 50%, transparent var(--notch), #000 calc(var(--notch) + 0.5px)) right / 51%
+        100% no-repeat;
+  }
+
+  .ticket__main {
+    display: grid;
+    gap: var(--space-2);
+    align-content: start;
+    margin: var(--space-3);
+    margin-inline-start: calc(var(--notch) + var(--space-2));
+    padding: var(--space-3);
+    border: var(--border-thin) dashed rgb(27 18 24 / 0.55);
+    border-inline-end: 0;
+  }
+
+  .ticket__media {
+    margin-block-end: var(--space-1);
+  }
+
+  .ticket__media :global(.ph) {
+    aspect-ratio: 16 / 10;
+  }
+
+  .ticket__img {
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    object-fit: cover;
+    border: var(--border-thin) solid var(--color-ink-900);
+    border-radius: var(--radius-sm);
+  }
+
+  .ticket__title {
+    font-size: var(--step-2);
+    line-height: var(--leading-tight);
+  }
+
+  .ticket__link {
+    color: var(--color-ink-900);
+    text-decoration: none;
+  }
+
+  /* Toda la tarjeta es el área clicable */
+  .ticket__link::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: var(--z-raised);
+  }
+
+  .ticket__link:hover {
+    color: var(--color-ink-900);
+    text-decoration: underline;
+    text-decoration-thickness: 3px;
+  }
+
+  .ticket__link:focus-visible {
+    outline: none;
+  }
+
+  /* El foco se dibuja en el ticket entero (la máscara recortaría un outline interno) */
+  .ticket:has(.ticket__link:focus-visible) {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 6px;
+    border-radius: var(--radius-md);
+  }
+
+  .ticket__type {
+    font-size: var(--step-0);
+    font-weight: var(--weight-medium);
+    color: var(--color-ink-900);
+  }
+
+  .ticket__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+    padding: 0;
+    margin-block-start: var(--space-1);
+    list-style: none;
+  }
+
+  .ticket__stub {
+    display: grid;
+    place-items: center;
+    margin: var(--space-3);
+    margin-inline-start: 0;
+    margin-inline-end: calc(var(--notch) + var(--space-1));
+    padding-inline: var(--space-2);
+    border: var(--border-thin) dashed rgb(27 18 24 / 0.55);
+    /* Línea de corte del talón */
+    border-inline-start: 3px dotted rgb(27 18 24 / 0.7);
+  }
+
+  .ticket__year {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-family: var(--font-display);
+    font-size: var(--step-3);
+    line-height: 1;
+    color: var(--color-brick-700);
+  }
+
+  .ticket__pin {
+    position: absolute;
+    top: calc(var(--space-2) * -1);
+    left: 50%;
+    z-index: var(--z-raised);
+    width: 1.5rem;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, rgb(255 255 255 / 0.45) 0 18%, transparent 20%),
+      color-mix(in srgb, var(--ticket-color) 45%, var(--color-ink-900));
+    box-shadow: 1px 2px 0 rgb(27 18 24 / 0.5);
+    transform: translateX(-50%);
+    pointer-events: none;
+  }
+</style>

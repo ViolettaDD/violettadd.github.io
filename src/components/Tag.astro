@@ -1,0 +1,89 @@
+---
+/**
+ * Tag: etiqueta corta (disciplina, estado, herramienta).
+ * Props:
+ * - variant?: 'discipline' | 'status' | 'tool'   (por defecto 'tool')
+ * - tone?: string   para 'discipline': games | animation | art | code;
+ *                   para 'status': complete | in-progress
+ * - as?: 'span' | 'li'                           (por defecto 'span')
+ * - class?: string
+ * Slot: texto de la etiqueta.
+ */
+interface Props {
+  variant?: 'discipline' | 'status' | 'tool';
+  tone?: string;
+  as?: 'span' | 'li';
+  class?: string;
+}
+
+const { variant = 'tool', tone, as: Tag = 'span', class: className } = Astro.props;
+---
+
+<Tag class:list={['tag', `tag--${variant}`, tone && `tag--${tone}`, className]}>
+  {variant === 'status' && <span class="tag__dot" aria-hidden="true" />}
+  <slot />
+</Tag>
+
+<style>
+  .tag {
+    --tag-bg: var(--color-bone-50);
+    --tag-fg: var(--color-ink-900);
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 0.2em 0.65em;
+    border: var(--border-thin) solid var(--color-ink-900);
+    border-radius: var(--radius-pill);
+    background: var(--tag-bg);
+    color: var(--tag-fg);
+    font-family: var(--font-body);
+    font-size: var(--step--1);
+    font-weight: var(--weight-bold);
+    line-height: 1.3;
+    white-space: nowrap;
+  }
+
+  .tag--discipline {
+    font-family: var(--font-display);
+    font-weight: var(--weight-regular);
+    letter-spacing: var(--tracking-display);
+  }
+
+  .tag--games {
+    --tag-bg: var(--color-violet-100);
+    --tag-fg: var(--color-violet-800);
+  }
+
+  .tag--animation {
+    --tag-bg: var(--color-teal-100);
+    --tag-fg: var(--color-teal-700);
+  }
+
+  .tag--art {
+    --tag-bg: var(--color-mustard-300);
+    --tag-fg: var(--color-ink-900);
+  }
+
+  .tag--code {
+    --tag-bg: var(--color-ink-700);
+    --tag-fg: var(--color-bone-50);
+  }
+
+  .tag--tool {
+    border-style: dashed;
+    border-color: var(--color-ink-500);
+    font-weight: var(--weight-medium);
+  }
+
+  .tag__dot {
+    width: 0.6em;
+    height: 0.6em;
+    border-radius: 50%;
+    background: var(--color-teal-700);
+  }
+
+  .tag--in-progress .tag__dot {
+    background: var(--color-mustard-500);
+    box-shadow: 0 0 0 2px var(--color-ink-900);
+  }
+</style>
