@@ -1,0 +1,23 @@
+---
+description: Requisitos de accesibilidad WCAG 2.2 AA, rendimiento y SEO
+alwaysApply: true
+---
+
+# Accesibilidad (WCAG 2.2 AA, no negociable)
+
+- HTML semántico: `header`, `nav`, `main#main`, `footer`, `section` con heading. Un solo `h1` por página; no saltar niveles.
+- Todo texto es HTML real. Nunca texto dentro de imágenes (el logo es la única excepción, con `alt="Vio"`).
+- Imágenes decorativas: `alt=""`. Imágenes de contenido: `alt` descriptivo y obligatorio (el schema lo exige).
+- Foco visible en todo elemento interactivo (`:focus-visible` del tema; en superficies oscuras usar `.on-dark`).
+- Navegación completa por teclado. Escape cierra menús. Sin trampas de foco.
+- Objetivos táctiles ≥ 44 × 44 px (`--tap-min`).
+- `aria-*` solo cuando HTML nativo no alcanza (`aria-expanded`, `aria-current`, `aria-pressed`, `aria-live`). Enlaces externos con `target="_blank"` anuncian que se abren en otra pestaña.
+- Respetar `prefers-reduced-motion`. Nada de autoplay con audio. Video local solo `muted` y con controles para pausar.
+- Mejora progresiva: sin JS todo el contenido es visible y los enlaces funcionan.
+
+# Rendimiento y SEO
+
+- Objetivo Lighthouse móvil ≥ 95 en las cuatro categorías.
+- Cero JS salvo necesidad. Embeds de terceros siempre con facade (`MediaEmbed`): el iframe se carga al hacer clic.
+- `title` y `description` únicos por página (props de `BaseLayout`), canonical, OG/Twitter, sitemap, `lang="es"`.
+- Páginas internas (`/_styleguide`, 404) con `noindex` y fuera del sitemap.

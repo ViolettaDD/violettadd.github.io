@@ -1,0 +1,407 @@
+---
+/**
+ * Jukebox: rocola del inicio para el showreel (momento memorable de la página).
+ * Cada "canción" es un video (MediaEmbed con facade). Estados: placeholder (sin video),
+ * listo (póster + play), sonando (iframe cargado), y la canción seleccionada en el selector.
+ * Sin JS: las canciones son enlaces a #ancla y la pantalla cambia con :target.
+ * Con JS: selección sin saltos, controles anterior / play / siguiente y aviso "Sonando".
+ *
+ * Props:
+ * - tracks?: JukeboxTrack[]     por defecto src/data/jukebox.ts
+ * - heading?: string            título visible (por defecto "Showreel")
+ * - headingId?: string          id del título (para aria-labelledby de la sección)
+ * - headingLevel?: 2 | 3
+ * - class?: string
+ */
+import MediaEmbed from './MediaEmbed.astro';
+import { jukeboxTracks, type JukeboxTrack } from '@/data/jukebox';
+import { isMediaPending } from '@/lib/media';
+import { isPending } from '@/lib/placeholders';
+import { t } from '@/i18n';
+
+interface Props {
+  tracks?: JukeboxTrack[];
+  heading?: string;
+  headingId?: string;
+  headingLevel?: 2 | 3;
+  class?: string;
+}
+
+const {
+  tracks = jukeboxTracks,
+  heading = t.home.showreelTitle,
+  headingId = 'jukebox-title',
+  headingLevel = 2,
+  class: className,
+} = Astro.props;
+
+const Heading = `h${headingLevel}` as 'h2' | 'h3';
+const code = (i: number) => `${String.fromCharCode(65 + Math.floor(i / 3))}${(i % 3) + 1}`;
+const panelId = (i: number) => `jukebox-track-${i + 1}`;
+const first = tracks[0];
+---
+
+<div class:list={['jukebox', className]} data-jukebox>
+  <div class="jukebox__cabinet">
+    <span class="jukebox__crown" aria-hidden="true"></span>
+    <span class="jukebox__bars jukebox__bars--left" aria-hidden="true"></span>
+    <span class="jukebox__bars jukebox__bars--right" aria-hidden="true"></span>
+
+    <div class="jukebox__body">
+      <div class="jukebox__arch">
+        <Heading class="jukebox__title" id={headingId}>{heading}</Heading>
+        <p class="jukebox__now">
+          <span class="jukebox__now-label">{t.jukebox.nowPlaying}:</span>{' '}
+          <span data-jukebox-now aria-live="polite">{first?.title}</span>
+        </p>
+
+        <div class="jukebox__screens">
+          {
+            tracks.map((track, i) => (
+              <div
+                class="jukebox__screen"
+                id={panelId(i)}
+                data-jukebox-panel
+                data-pending={isMediaPending(track.media) ? 'true' : undefined}
+              >
+                <MediaEmbed
+                  media={track.media}
+                  eager={i === 0}
+                  sizes="(min-width: 48em) 40rem, 90vw"
+                  pendingLabel={`Video: ${track.title}`}
+                  pendingSource={`src/data/jukebox.ts → "${track.title}" → media`}
+                />
+              </div>
+            ))
+          }
+        </div>
+      </div>
+
+      <div class="jukebox__selector">
+        <ol class="jukebox__tracks" role="list" aria-label={t.jukebox.trackList}>
+          {
+            tracks.map((track, i) => (
+              <li>
+                <a
+                  class="jukebox__track"
+                  href={`#${panelId(i)}`}
+                  data-jukebox-track
+                  data-title={track.title}
+                  aria-current={i === 0 ? 'true' : undefined}
+                >
+                  <span class="jukebox__code" aria-hidden="true">
+                    {code(i)}
+                  </span>
+                  <span class="jukebox__track-text">
+                    <span class="jukebox__track-title">{track.title}</span>
+                    {track.note && !isPending(track.note) && (
+                      <span class="jukebox__track-note">{track.note}</span>
+                    )}
+                  </span>
+                </a>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+
+      <div class="jukebox__controls" data-jukebox-controls hidden>
+        <button class="jukebox__btn" type="button" data-jukebox-prev aria-label={t.actions.previous}>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 5h2v14H6zM20 5v14L9 12z"></path></svg>
+        </button>
+        <button class="jukebox__btn jukebox__btn--play" type="button" data-jukebox-play aria-label={t.actions.play}>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 4l13 8-13 8z"></path></svg>
+        </button>
+        <button class="jukebox__btn" type="button" data-jukebox-next aria-label={t.actions.next}>
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M16 5h2v14h-2zM4 5v14l11-7z"></path></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+  <span class="jukebox__base" aria-hidden="true"></span>
+</div>
+
+<script>
+  import { initJukeboxes } from '@/scripts/jukebox';
+  initJukeboxes();
+</script>
+
+<style>
+  .jukebox {
+    --arch: clamp(7rem, 32vw, 15rem);
+    position: relative;
+    width: min(100%, 46rem);
+    margin-inline: auto;
+    padding-block-start: var(--space-5);
+  }
+
+  /* ---------- Gabinete: neón + madera ---------- */
+  .jukebox__cabinet {
+    position: relative;
+    padding: clamp(0.75rem, 2.5vw, 1.25rem);
+    background: linear-gradient(160deg, var(--color-neon-blue), var(--color-neon-violet));
+    border: var(--border-thick) solid var(--color-ink-900);
+    border-radius: 50% 50% var(--radius-lg) var(--radius-lg) / var(--arch) var(--arch) var(--radius-lg)
+      var(--radius-lg);
+    box-shadow:
+      var(--shadow-hard-lg),
+      0 0 3rem rgb(166 76 245 / 0.45);
+  }
+
+  .jukebox__crown {
+    position: absolute;
+    top: calc(var(--space-5) * -1);
+    left: 50%;
+    width: clamp(6rem, 22vw, 9rem);
+    height: calc(var(--space-5) + 1rem);
+    transform: translateX(-50%);
+    background: var(--color-curtain-500);
+    border: var(--border-thick) solid var(--color-ink-900);
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    clip-path: polygon(0 0, 100% 0, 82% 100%, 18% 100%);
+    z-index: var(--z-raised);
+  }
+
+  .jukebox__bars {
+    display: none;
+  }
+
+  @media (min-width: 48em) {
+    .jukebox__bars {
+      display: block;
+      position: absolute;
+      top: 52%;
+      width: 2.5rem;
+      height: 6rem;
+      background:
+        linear-gradient(var(--color-brass-300), var(--color-brass-500)) 0 0.5rem / 100% 0.7rem no-repeat,
+        linear-gradient(var(--color-brass-300), var(--color-brass-500)) 0 2.65rem / 100% 0.7rem no-repeat,
+        linear-gradient(var(--color-brass-300), var(--color-brass-500)) 0 4.8rem / 100% 0.7rem no-repeat,
+        var(--color-curtain-500);
+      border: var(--border-thick) solid var(--color-ink-900);
+    }
+
+    .jukebox__bars--left {
+      left: -2.25rem;
+      border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+    }
+
+    .jukebox__bars--right {
+      right: -2.25rem;
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    }
+  }
+
+  .jukebox__body {
+    display: grid;
+    gap: var(--space-4);
+    padding: clamp(0.75rem, 3vw, 1.5rem);
+    padding-block-start: clamp(2rem, 8vw, 4rem);
+    background-color: var(--color-jukebox-wood);
+    background-image: var(--texture-wood-grain);
+    border: var(--border-thick) solid var(--color-ink-900);
+    border-radius: 50% 50% var(--radius-md) var(--radius-md) / calc(var(--arch) - 1rem) calc(var(--arch) - 1rem)
+      var(--radius-md) var(--radius-md);
+  }
+
+  /* ---------- Arco con cortina: título + pantalla ---------- */
+  .jukebox__arch {
+    position: relative;
+    display: grid;
+    gap: var(--space-3);
+    padding: clamp(2.25rem, 7vw, 3.5rem) clamp(0.5rem, 2.5vw, 1.25rem) clamp(0.5rem, 2.5vw, 1.25rem);
+    background:
+      radial-gradient(circle at 50% 0, var(--color-curtain-500) 0 58%, var(--color-brass-500) 59% 66%, transparent 67%)
+        0 0 / 2.5rem 1.4rem repeat-x,
+      repeating-linear-gradient(90deg, rgb(0 0 0 / 0.12) 0 2px, transparent 2px 1.25rem),
+      linear-gradient(var(--color-curtain-700), var(--color-curtain-900));
+    border: var(--border-thick) solid var(--color-ink-900);
+    border-radius: 50% 50% var(--radius-md) var(--radius-md) / calc(var(--arch) - 2.5rem) calc(var(--arch) - 2.5rem)
+      var(--radius-md) var(--radius-md);
+    text-align: center;
+  }
+
+  .jukebox__title {
+    color: var(--color-brass-300);
+    font-size: var(--step-3);
+    text-shadow: 3px 3px 0 var(--color-ink-900);
+  }
+
+  .jukebox__now {
+    color: var(--color-cream-200);
+    font-size: var(--step--1);
+  }
+
+  .jukebox__now-label {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+    color: var(--color-brass-300);
+  }
+
+  .jukebox__screen {
+    display: none;
+    padding: var(--space-1);
+    background: var(--color-ink-900);
+    border-radius: var(--radius-md);
+    text-align: start;
+  }
+
+  /* Sin JS: la pantalla visible es la del ancla (o la primera) */
+  .jukebox:not([data-enhanced]) .jukebox__screen:target,
+  .jukebox:not([data-enhanced]) .jukebox__screens:not(:has(.jukebox__screen:target)) .jukebox__screen:first-child {
+    display: block;
+  }
+
+  /* Con JS: el script pone `hidden` en las pantallas no seleccionadas */
+  .jukebox[data-enhanced] .jukebox__screen:not([hidden]) {
+    display: block;
+  }
+
+  .jukebox__screen :global(.ph) {
+    border-color: var(--color-placeholder-stripe);
+  }
+
+  /* ---------- Selector de canciones ---------- */
+  .jukebox__selector {
+    padding: var(--space-3);
+    background: var(--color-curtain-900);
+    border: var(--border-thick) solid var(--color-ink-900);
+    border-radius: var(--radius-md);
+    box-shadow: inset 0 3px 0 rgb(0 0 0 / 0.35);
+  }
+
+  .jukebox__tracks {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 9.5rem), 1fr));
+    gap: var(--space-2);
+    padding: 0;
+    list-style: none;
+  }
+
+  .jukebox__track {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    height: 100%;
+    min-height: var(--tap-min);
+    padding: var(--space-2);
+    background: linear-gradient(var(--color-chess-light), var(--color-cream-100));
+    border: var(--border-thin) solid var(--color-ink-900);
+    border-block-start: 6px solid var(--color-sage-500);
+    border-radius: var(--radius-sm);
+    color: var(--color-ink-900);
+    text-decoration: none;
+    transition:
+      transform var(--duration-fast) var(--ease-out),
+      background-color var(--duration-fast);
+  }
+
+  .jukebox__track:hover {
+    color: var(--color-ink-900);
+    transform: translateY(-2px);
+  }
+
+  .jukebox__track[aria-current='true'] {
+    background: var(--color-mustard-300);
+    border-block-start-color: var(--color-curtain-500);
+    box-shadow: 0 0 0 3px var(--color-brass-300);
+  }
+
+  .jukebox__track:focus-visible {
+    outline-color: var(--color-mustard-300);
+  }
+
+  .jukebox__code {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    aspect-ratio: 1;
+    background: var(--color-ink-900);
+    color: var(--color-brass-300);
+    border-radius: var(--radius-sm);
+    font-family: var(--font-display);
+    font-size: var(--step--1);
+  }
+
+  .jukebox__track-text {
+    display: grid;
+    line-height: var(--leading-snug);
+  }
+
+  .jukebox__track-title {
+    font-weight: var(--weight-bold);
+    font-size: var(--step--1);
+  }
+
+  .jukebox__track-note {
+    font-size: var(--step--2);
+    color: var(--color-ink-500);
+  }
+
+  /* ---------- Controles ---------- */
+  .jukebox__controls {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-4);
+    margin-inline: auto;
+    background: var(--color-chess-light);
+    border: var(--border-thick) solid var(--color-ink-900);
+    border-radius: var(--radius-md);
+  }
+
+  .jukebox__controls[hidden] {
+    display: none;
+  }
+
+  .jukebox__btn {
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(var(--color-brass-300), var(--color-brass-500));
+    border: var(--border-thick) solid var(--color-ink-900);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 0 var(--color-brass-700);
+    color: var(--color-ink-900);
+    transition: transform var(--duration-fast) var(--ease-out);
+  }
+
+  .jukebox__btn--play {
+    width: 3.75rem;
+  }
+
+  .jukebox__btn svg {
+    width: 1.4rem;
+    height: 1.4rem;
+    fill: currentColor;
+  }
+
+  .jukebox__btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .jukebox__btn:active {
+    transform: translateY(3px);
+    box-shadow: 0 1px 0 var(--color-brass-700);
+  }
+
+  .jukebox__btn:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+    transform: none;
+  }
+
+  .jukebox__base {
+    display: block;
+    width: 88%;
+    height: var(--space-4);
+    margin-inline: auto;
+    background: linear-gradient(90deg, var(--color-brass-700), var(--color-brass-300) 30%, var(--color-brass-500) 60%, var(--color-brass-300) 85%, var(--color-brass-700));
+    border: var(--border-thick) solid var(--color-ink-900);
+    border-block-start: 0;
+    border-radius: 0 0 var(--radius-md) var(--radius-md);
+  }
+</style>

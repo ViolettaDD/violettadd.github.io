@@ -1,0 +1,51 @@
+---
+/**
+ * Paper: superficie de papel crema con bordes rasgados y sombra suave.
+ * Props:
+ * - as?: 'div' | 'section' | 'article' | 'aside'   (por defecto 'div')
+ * - edges?: 'bottom' | 'both' | 'none'             bordes rasgados (por defecto 'both')
+ * - tilt?: number                                  rotación estática en grados (p. ej. -1)
+ * - padding?: 'sm' | 'md' | 'lg'
+ * - class?: string
+ * Cualquier otro atributo (id, aria-labelledby…) se pasa al elemento.
+ * Slot: contenido. El texto encima debe ser tinta (--color-text).
+ */
+import type { HTMLAttributes } from 'astro/types';
+
+type Props = HTMLAttributes<'div'> & {
+  as?: 'div' | 'section' | 'article' | 'aside';
+  edges?: 'bottom' | 'both' | 'none';
+  tilt?: number;
+  padding?: 'sm' | 'md' | 'lg';
+  class?: string;
+};
+
+const { as: Tag = 'div', edges = 'both', tilt = 0, padding = 'md', class: className, ...rest } = Astro.props;
+const edgeClass = edges === 'none' ? '' : `edge-torn-${edges}`;
+---
+
+<Tag class:list={['paper', className]} style={tilt ? `--paper-tilt: ${tilt}deg` : undefined} {...rest}>
+  <div class:list={['paper__sheet', 'surface--paper', edgeClass, `paper__sheet--${padding}`]}>
+    <slot />
+  </div>
+</Tag>
+
+<style>
+  .paper {
+    filter: var(--drop-paper);
+    transform: rotate(var(--paper-tilt, 0deg));
+  }
+
+  .paper__sheet {
+    --edge-size: 12px;
+    padding: calc(var(--space-5) + var(--edge-size)) var(--space-5);
+  }
+
+  .paper__sheet--sm {
+    padding: calc(var(--space-4) + var(--edge-size)) var(--space-4);
+  }
+
+  .paper__sheet--lg {
+    padding: calc(var(--space-7) + var(--edge-size)) clamp(var(--space-5), 5vw, var(--space-8));
+  }
+</style>

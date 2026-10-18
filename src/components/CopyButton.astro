@@ -1,0 +1,95 @@
+---
+/**
+ * CopyButton: copia un texto al portapapeles y lo anuncia (aria-live).
+ * Sin JavaScript no se muestra (el texto sigue visible y seleccionable al lado).
+ * Props:
+ * - value: string            texto a copiar
+ * - label?: string           texto del botón (por defecto "Copiar")
+ * - variant?: 'primary' | 'secondary'
+ * - class?: string
+ */
+import { t } from '@/i18n';
+
+interface Props {
+  value: string;
+  label?: string;
+  variant?: 'primary' | 'secondary';
+  class?: string;
+}
+
+const { value, label = t.actions.copy, variant = 'secondary', class: className } = Astro.props;
+---
+
+<span class:list={['copy', className]} data-copy>
+  <button
+    class:list={['copy__btn', `copy__btn--${variant}`]}
+    type="button"
+    data-copy-value={value}
+    data-copied-label={t.actions.copied}
+    data-failed-label={t.actions.copyFailed}
+    hidden
+  >
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M9 9h10v11H9zM5 15V4h10"></path>
+    </svg>
+    <span data-copy-label>{label}</span>
+  </button>
+  <span class="visually-hidden" aria-live="polite" data-copy-status></span>
+</span>
+
+<script>
+  import { initCopyButtons } from '@/scripts/copy';
+  initCopyButtons();
+</script>
+
+<style>
+  .copy__btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--tap-min);
+    padding: var(--space-1) var(--space-4);
+    border: var(--border-thick) solid var(--color-ink-900);
+    border-radius: var(--radius-md);
+    background: var(--color-bone-50);
+    color: var(--color-ink-900);
+    box-shadow: var(--shadow-hard-sm);
+    font-family: var(--font-display);
+    font-size: var(--step--1);
+    transition:
+      transform var(--duration-fast) var(--ease-out),
+      background-color var(--duration-fast) var(--ease-out);
+  }
+
+  .copy__btn[hidden] {
+    display: none;
+  }
+
+  .copy__btn--primary {
+    background: var(--color-violet-600);
+    color: var(--color-white);
+  }
+
+  .copy__btn:hover {
+    transform: translate(-1px, -1px);
+  }
+
+  .copy__btn:active {
+    transform: translate(1px, 1px);
+    box-shadow: none;
+  }
+
+  .copy__btn[data-state='copied'] {
+    background: var(--color-teal-700);
+    color: var(--color-white);
+  }
+
+  .copy__btn svg {
+    width: 1.1em;
+    height: 1.1em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+  }
+</style>

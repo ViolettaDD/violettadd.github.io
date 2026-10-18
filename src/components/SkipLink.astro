@@ -1,0 +1,40 @@
+---
+/**
+ * SkipLink: primer elemento enfocable; salta al <main id="main">.
+ * Props:
+ * - target?: string  id del destino (por defecto "main")
+ */
+import { t } from '@/i18n';
+
+interface Props {
+  target?: string;
+}
+
+const { target = 'main' } = Astro.props;
+---
+
+<a class="skip-link" href={`#${target}`}>{t.a11y.skipToContent}</a>
+
+<style>
+  .skip-link {
+    position: fixed;
+    top: var(--space-3);
+    left: var(--space-3);
+    z-index: var(--z-skip-link);
+    padding: var(--space-3) var(--space-4);
+    min-height: var(--tap-min);
+    background: var(--color-ink-900);
+    color: var(--color-bone-50);
+    font-family: var(--font-display);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-hard-md);
+    transform: translateY(-200%);
+    transition: transform var(--duration-fast) var(--ease-out);
+  }
+
+  .skip-link:focus {
+    transform: translateY(0);
+    outline-color: var(--color-mustard-300);
+  }
+</style>

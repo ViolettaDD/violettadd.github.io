@@ -1,0 +1,13 @@
+# Dependencias y build
+node_modules/
+dist/
+.astro/
+
+# Entorno local
+.env
+.env.*
+!.env.example
+
+# Sistema / editores
+.DS_Store
+*.log

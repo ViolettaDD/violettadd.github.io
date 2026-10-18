@@ -1,0 +1,57 @@
+---
+/**
+ * BaseLayout: documento HTML común (SEO, skip link, header, <main>, footer).
+ * Props: las mismas de Seo (title, description, image, imageAlt, type, noindex, jsonLd).
+ * Slots:
+ * - default: contenido de <main>
+ * - head: etiquetas extra para <head>
+ */
+import '@/styles/tokens.css';
+import '@/styles/base.css';
+import '@/styles/surfaces.css';
+import Seo from '@/components/Seo.astro';
+import SkipLink from '@/components/SkipLink.astro';
+import Header from '@/components/Header.astro';
+import Footer from '@/components/Footer.astro';
+import { t } from '@/i18n';
+
+type Props = import('@/components/Seo.astro').Props;
+
+const props = Astro.props;
+---
+
+<!doctype html>
+<html lang={t.meta.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    {/* Fuente de lectura: se precarga porque aparece en el primer pantallazo de todas las páginas */}
+    <link
+      rel="preload"
+      href="/fonts/atkinson-hyperlegible-next-latin-wght.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
+    <Seo {...props} />
+    <slot name="head" />
+  </head>
+  <body>
+    <SkipLink />
+    <Header />
+    <main id="main" tabindex="-1">
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style>
+  main:focus {
+    outline: none;
+  }
+</style>

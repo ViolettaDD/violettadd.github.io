@@ -1,0 +1,177 @@
+---
+/**
+ * MenuSection: sección de "menú de diner" (Sobre mí). Título centrado con adornos y,
+ * opcionalmente, una lista de platos con líneas punteadas (nombre …… detalle).
+ * Props:
+ * - title: string
+ * - id?: string                 id de la sección (ancla)
+ * - level?: 2 | 3               nivel del heading (por defecto 2)
+ * - subtitle?: string
+ * - items?: { name: string; detail?: string; note?: string; href?: string }[]
+ *     name: texto principal; detail: dato a la derecha (año, nivel); note: línea secundaria
+ * - class?: string
+ * Slot: contenido libre (párrafos) debajo del título y antes de la lista.
+ */
+interface MenuItem {
+  name: string;
+  detail?: string;
+  note?: string;
+  href?: string;
+}
+
+interface Props {
+  title: string;
+  id?: string;
+  level?: 2 | 3;
+  subtitle?: string;
+  items?: MenuItem[];
+  class?: string;
+}
+
+const { title, id, level = 2, subtitle, items = [], class: className } = Astro.props;
+const Heading = `h${level}` as 'h2' | 'h3';
+const headingId = id ? `${id}-title` : undefined;
+---
+
+<section class:list={['menu-section', className]} id={id} aria-labelledby={headingId}>
+  <header class="menu-section__header">
+    <span class="menu-section__ornament" aria-hidden="true">✦</span>
+    <Heading class="menu-section__title" id={headingId}>{title}</Heading>
+    <span class="menu-section__ornament" aria-hidden="true">✦</span>
+  </header>
+  {subtitle && <p class="menu-section__subtitle">{subtitle}</p>}
+
+  {
+    Astro.slots.has('default') && (
+      <div class="menu-section__content prose">
+        <slot />
+      </div>
+    )
+  }
+
+  {
+    items.length > 0 && (
+      <ul class="menu-section__items" role="list">
+        {items.map((item) => (
+          <li class="menu-item">
+            <span class="menu-item__row">
+              <span class="menu-item__name">
+                {item.href ? <a href={item.href}>{item.name}</a> : item.name}
+              </span>
+              {item.detail && (
+                <>
+                  <span class="menu-item__leader" aria-hidden="true" />
+                  <span class="menu-item__detail">{item.detail}</span>
+                </>
+              )}
+            </span>
+            {item.note && <span class="menu-item__note">{item.note}</span>}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</section>
+
+<style>
+  .menu-section {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .menu-section__header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-3);
+    text-align: center;
+  }
+
+  .menu-section__header::before,
+  .menu-section__header::after {
+    content: '';
+    flex: 1;
+    max-width: 6rem;
+    border-block-start: var(--border-thick) double var(--color-ink-700);
+  }
+
+  .menu-section__title {
+    min-width: 0;
+    font-size: var(--step-1);
+    hyphens: auto;
+    color: var(--color-brick-700);
+    text-transform: uppercase;
+    letter-spacing: var(--tracking-label);
+  }
+
+  .menu-section__ornament {
+    color: var(--color-mustard-500);
+    font-size: var(--step-0);
+  }
+
+  .menu-section__header::before,
+  .menu-section__header::after {
+    display: none;
+  }
+
+  @media (min-width: 36em) {
+    .menu-section__title {
+      font-size: var(--step-2);
+    }
+
+    .menu-section__header::before,
+    .menu-section__header::after {
+      display: block;
+    }
+  }
+
+  .menu-section__subtitle {
+    text-align: center;
+    font-style: italic;
+    color: var(--color-text-muted);
+  }
+
+  .menu-section__content {
+    margin-inline: auto;
+  }
+
+  .menu-section__items {
+    display: grid;
+    gap: var(--space-3);
+    padding: 0;
+    list-style: none;
+  }
+
+  .menu-item {
+    display: grid;
+    gap: var(--space-1);
+  }
+
+  .menu-item__row {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+  }
+
+  .menu-item__name {
+    font-weight: var(--weight-bold);
+  }
+
+  .menu-item__leader {
+    flex: 1;
+    min-width: var(--space-5);
+    border-block-end: 3px dotted var(--color-ink-500);
+    transform: translateY(-0.25em);
+  }
+
+  .menu-item__detail {
+    font-family: var(--font-display);
+    color: var(--color-violet-600);
+    white-space: nowrap;
+  }
+
+  .menu-item__note {
+    font-size: var(--step--1);
+    color: var(--color-text-muted);
+  }
+</style>

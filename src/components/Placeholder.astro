@@ -1,0 +1,291 @@
+---
+/**
+ * Placeholder: marca visible de contenido pendiente. Estilo "plano técnico" (azul, punteado,
+ * trama diagonal) para que nunca se confunda con el diseño final.
+ * Si PUBLIC_SHOW_PLACEHOLDERS=false no renderiza nada.
+ *
+ * Props:
+ * - kind: 'image' | 'video' | 'embed' | 'text' | 'list' | 'link' | 'gallery' | 'download'
+ * - label: string        qué va ahí ("Captura del nivel 1")
+ * - source: string       dónde se edita ("src/content/projects/x.mdx → cover")
+ * - format?: string      formato/tamaño recomendado ("1600×900 px, WebP/JPG ≤ 300 KB")
+ * - ratio?: string       proporción CSS para image/video/embed/gallery ("16/9", "4/3", "1/1")
+ * - lines?: number       líneas simuladas para text (por defecto 3)
+ * - items?: number       elementos simulados para list y gallery (por defecto 3 / 4)
+ * - size?: 'default' | 'compact' | 'inline'   inline = dentro de una línea de texto
+ * - class?: string
+ */
+import { PLACEHOLDER_MARK, showPlaceholders } from '@/lib/placeholders';
+import { t } from '@/i18n';
+
+type Kind = 'image' | 'video' | 'embed' | 'text' | 'list' | 'link' | 'gallery' | 'download';
+
+interface Props {
+  kind: Kind;
+  label: string;
+  source: string;
+  format?: string;
+  ratio?: string;
+  lines?: number;
+  items?: number;
+  size?: 'default' | 'compact' | 'inline';
+  class?: string;
+}
+
+const {
+  kind,
+  label,
+  source,
+  format,
+  ratio,
+  lines = 3,
+  items,
+  size = 'default',
+  class: className,
+} = Astro.props;
+
+const hasFrame = kind === 'image' || kind === 'video' || kind === 'embed';
+const frameRatio = ratio ?? (kind === 'image' ? '4/3' : '16/9');
+const galleryCount = kind === 'gallery' ? (items ?? 4) : 0;
+const listCount = kind === 'list' ? (items ?? 3) : 0;
+// Anchos de líneas simuladas: varían para parecer texto
+const lineWidths = [100, 94, 97, 88, 92, 70];
+
+const icons: Record<Kind, string> = {
+  image: 'M4 5h16v14H4zM4 15l5-5 4 4 3-3 4 4M15 9h.01',
+  gallery: 'M3 7h13v12H3zM8 4h13v12',
+  video: 'M4 6h16v12H4zM10 9l5 3-5 3z',
+  embed: 'M8 8l-4 4 4 4M16 8l4 4-4 4M13 6l-2 12',
+  text: 'M5 7h14M5 12h14M5 17h9',
+  list: 'M9 7h11M9 12h11M9 17h11M5 7h.01M5 12h.01M5 17h.01',
+  link: 'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1',
+  download: 'M12 4v11M7 10l5 5 5-5M5 20h14',
+};
+
+const Tag = size === 'inline' ? 'span' : 'div';
+---
+
+{
+  showPlaceholders && (
+    <Tag
+      class:list={['ph', `ph--${kind}`, `ph--${size}`, className]}
+      data-placeholder={kind}
+      style={hasFrame ? `--ph-ratio: ${frameRatio}` : undefined}
+    >
+      <span class="ph__head">
+        <span class="ph__badge">{PLACEHOLDER_MARK}</span>
+        <span class="ph__kind">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d={icons[kind]} />
+          </svg>
+          {t.placeholder.kinds[kind]}
+        </span>
+      </span>
+      <span class="ph__body">
+        <span class="ph__label">{label}</span>
+        {format && size !== 'inline' && (
+          <span class="ph__meta">
+            <span class="ph__key">{t.placeholder.format}:</span> {format}
+          </span>
+        )}
+        <span class="ph__meta">
+          <span class="ph__key">{t.placeholder.edit}:</span> <code>{source}</code>
+        </span>
+      </span>
+      {kind === 'text' && size === 'default' && (
+        <span class="ph__lines" aria-hidden="true">
+          {Array.from({ length: lines }, (_, i) => (
+            <span style={`width: ${i === lines - 1 ? 60 : lineWidths[i % lineWidths.length]}%`} />
+          ))}
+        </span>
+      )}
+      {kind === 'list' && size === 'default' && (
+        <span class="ph__lines ph__lines--list" aria-hidden="true">
+          {Array.from({ length: listCount }, (_, i) => (
+            <span style={`width: ${lineWidths[(i + 2) % lineWidths.length] - 25}%`} />
+          ))}
+        </span>
+      )}
+      {kind === 'gallery' && (
+        <span class="ph__gallery" aria-hidden="true" style={`--ph-ratio: ${ratio ?? '4/3'}`}>
+          {Array.from({ length: galleryCount }, () => (
+            <span />
+          ))}
+        </span>
+      )}
+    </Tag>
+  )
+}
+
+<style>
+  .ph {
+    --ph-color: var(--color-placeholder);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border: var(--border-thin) dashed var(--ph-color);
+    border-radius: var(--radius-md);
+    background: repeating-linear-gradient(
+      -45deg,
+      var(--color-placeholder-bg) 0 10px,
+      var(--color-placeholder-stripe) 10px 20px
+    );
+    color: var(--ph-color);
+    font-family: var(--font-body);
+    font-size: var(--step--1);
+    line-height: var(--leading-snug);
+    text-align: start;
+  }
+
+  /* Contenedores con proporción fija: reservan el espacio del medio real (sin saltos) */
+  .ph--image,
+  .ph--video,
+  .ph--embed {
+    aspect-ratio: var(--ph-ratio);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
+  .ph--image .ph__head,
+  .ph--video .ph__head,
+  .ph--embed .ph__head {
+    justify-content: center;
+  }
+
+  .ph--compact {
+    padding: var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .ph--inline {
+    display: inline-flex;
+    flex-flow: row wrap;
+    align-items: center;
+    gap: var(--space-1) var(--space-2);
+    padding: var(--space-1) var(--space-2);
+    vertical-align: middle;
+    max-width: 100%;
+  }
+
+  .ph--inline .ph__body {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0 var(--space-2);
+  }
+
+  .ph__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .ph__badge {
+    padding: 0.15em 0.55em;
+    background: var(--ph-color);
+    color: var(--color-white);
+    border-radius: var(--radius-pill);
+    font-size: var(--step--2);
+    font-weight: var(--weight-bold);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
+  .ph__kind {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    font-weight: var(--weight-bold);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: var(--step--2);
+  }
+
+  .ph__kind svg {
+    width: 1.25em;
+    height: 1.25em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .ph__body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    max-width: 60ch;
+  }
+
+  .ph__label {
+    font-weight: var(--weight-bold);
+    font-size: var(--step-0);
+    color: var(--color-ink-900);
+  }
+
+  .ph--inline .ph__label {
+    font-size: inherit;
+  }
+
+  .ph__key {
+    font-weight: var(--weight-bold);
+  }
+
+  .ph__meta code {
+    font-family: var(--font-mono);
+    font-size: 0.92em;
+    overflow-wrap: anywhere;
+  }
+
+  .ph__lines {
+    display: grid;
+    gap: var(--space-2);
+  }
+
+  .ph__lines span {
+    display: block;
+    height: 0.6em;
+    border-radius: var(--radius-pill);
+    background: color-mix(in srgb, var(--ph-color) 22%, transparent);
+  }
+
+  .ph__lines--list span {
+    position: relative;
+    margin-inline-start: 1.2em;
+  }
+
+  .ph__lines--list span::before {
+    content: '';
+    position: absolute;
+    left: -1.1em;
+    top: 0;
+    width: 0.6em;
+    height: 0.6em;
+    border-radius: 50%;
+    background: inherit;
+  }
+
+  .ph__gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(9rem, 100%), 1fr));
+    gap: var(--space-3);
+  }
+
+  .ph__gallery span {
+    aspect-ratio: var(--ph-ratio);
+    border: var(--border-thin) dashed var(--ph-color);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--color-white) 55%, transparent);
+  }
+
+  .ph--download {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    width: fit-content;
+    max-width: 100%;
+  }
+</style>

@@ -1,0 +1,15 @@
+---
+description: Reglas de contenido - no inventar, placeholders [POR COMPLETAR]
+alwaysApply: true
+---
+
+# No inventar contenido
+
+- NUNCA inventar logros, premios, empresas, clientes, métricas, fechas, citas ni textos finales sobre Vio.
+- No mostrar la edad de Vio en ningún lugar.
+- Sin lorem ipsum. Todo hueco usa la marca `[POR COMPLETAR]` y el componente `<Placeholder>` con: qué va, formato recomendado y archivo/campo donde se edita.
+- En datos (`src/data/*.ts`, frontmatter) los valores pendientes empiezan con `[POR COMPLETAR]`; `isPending()` (`src/lib/placeholders.ts`) los detecta.
+- Junto a cada punto de inserción, un comentario `TODO(vio): …` con instrucciones concretas.
+- Textos migrados de `_legacy/` se copian tal cual, marcados como borrador; datos inconsistentes se marcan con `TODO(vio)` sin corregirlos por cuenta propia.
+- `PUBLIC_SHOW_PLACEHOLDERS=false` oculta las secciones vacías. El deploy falla si quedan `[POR COMPLETAR]` en `dist/` salvo `ALLOW_PLACEHOLDERS=true`.
+- `npm run placeholders` lista todo lo pendiente; mantener `CONTENT_GUIDE.md` al día cuando se agregue un placeholder nuevo.

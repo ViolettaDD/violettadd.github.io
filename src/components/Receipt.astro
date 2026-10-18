@@ -1,0 +1,111 @@
+---
+/**
+ * Receipt: recibo de diner (papel con borde superior rasgado e inferior en zigzag).
+ * Momento memorable de la página de contacto.
+ * Props:
+ * - title: string             título impreso arriba
+ * - subtitle?: string
+ * - headingLevel?: 1 | 2      (por defecto 2; usar 1 si el recibo es el título de la página)
+ * - number?: string           número de orden decorativo, p. ej. "0042"
+ * - class?: string
+ * Slots:
+ * - default: filas del recibo (usar <dl>, tablas o listas; separar con <hr />)
+ * - footer: cierre del recibo (propina, total, firma)
+ */
+interface Props {
+  title: string;
+  subtitle?: string;
+  headingLevel?: 1 | 2;
+  number?: string;
+  class?: string;
+}
+
+const { title, subtitle, headingLevel = 2, number, class: className } = Astro.props;
+const Heading = `h${headingLevel}` as 'h1' | 'h2';
+---
+
+<div class:list={['receipt', className]}>
+  <div class="receipt__paper surface--paper">
+    <header class="receipt__header">
+      {number && <p class="receipt__number" aria-hidden="true">Nº {number}</p>}
+      <Heading class="receipt__title">{title}</Heading>
+      {subtitle && <p class="receipt__subtitle">{subtitle}</p>}
+    </header>
+    <div class="receipt__body">
+      <slot />
+    </div>
+    {
+      Astro.slots.has('footer') && (
+        <footer class="receipt__footer">
+          <slot name="footer" />
+        </footer>
+      )
+    }
+  </div>
+</div>
+
+<style>
+  .receipt {
+    width: min(100%, 34rem);
+    margin-inline: auto;
+    filter: drop-shadow(6px 8px 0 rgb(27 18 24 / 0.35));
+  }
+
+  .receipt__paper {
+    --edge-size: 12px;
+    padding: calc(var(--space-6) + var(--edge-size)) clamp(var(--space-4), 5vw, var(--space-7))
+      calc(var(--space-6) + 10px);
+    mask-image: var(--edge-torn-top), linear-gradient(#000 0 0), var(--edge-zigzag-bottom);
+    mask-size:
+      120px var(--edge-size),
+      100% calc(100% - var(--edge-size) - 10px + 2px),
+      20px 10px;
+    mask-position: top, center, bottom;
+    mask-repeat: repeat-x, no-repeat, repeat-x;
+  }
+
+  .receipt__header {
+    display: grid;
+    gap: var(--space-2);
+    padding-block-end: var(--space-4);
+    margin-block-end: var(--space-4);
+    border-block-end: var(--border-thick) double var(--color-ink-700);
+    text-align: center;
+  }
+
+  .receipt__number {
+    font-family: var(--font-mono);
+    font-size: var(--step--1);
+    color: var(--color-text-muted);
+    letter-spacing: 0.1em;
+  }
+
+  .receipt__title {
+    font-size: var(--step-3);
+    color: var(--color-violet-600);
+  }
+
+  .receipt__subtitle {
+    font-family: var(--font-display);
+    font-size: var(--step-0);
+    color: var(--color-teal-700);
+    letter-spacing: var(--tracking-label);
+    text-transform: uppercase;
+  }
+
+  .receipt__body {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  .receipt__body :global(hr) {
+    border: 0;
+    border-block-start: var(--border-thin) dashed var(--color-ink-500);
+  }
+
+  .receipt__footer {
+    margin-block-start: var(--space-5);
+    padding-block-start: var(--space-4);
+    border-block-start: var(--border-thick) double var(--color-ink-700);
+  }
+</style>

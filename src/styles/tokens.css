@@ -1,0 +1,275 @@
+/*
+ * Tokens de diseño de Vio. Única fuente de verdad para color, tipo, espacio y movimiento.
+ * Los componentes solo deben usar estas variables, nunca valores sueltos.
+ * Paleta muestreada de las ilustraciones en _legacy/img y ajustada para contraste WCAG AA
+ * (ver la tabla de contraste en /_styleguide).
+ */
+
+/* ---------------------------------------------------------------------------
+ * Fuentes (self-hosted en public/fonts, licencias en docs/FONTS.md)
+ * ------------------------------------------------------------------------ */
+
+/*
+ * TODO(licencia): la fuente de títulos se controla con ESTA única declaración y con
+ * el token --font-display. Para cambiarla (por ejemplo, si compras la licencia web de
+ * Rouge Vintage), reemplaza solo la línea `src` por el nuevo .woff2 en public/fonts/.
+ * El nombre "Vio Display" no cambia, así que el resto del sitio no se toca.
+ * Candidatas libres (OFL) para comparar en /_styleguide: Alfa Slab One (actual),
+ * Shrikhand y Bungee.
+ */
+@font-face {
+  font-family: 'Vio Display';
+  src: url('/fonts/alfa-slab-one-latin-400.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible Next';
+  src: url('/fonts/atkinson-hyperlegible-next-latin-wght.woff2') format('woff2');
+  font-weight: 200 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Atkinson Hyperlegible Next';
+  src: url('/fonts/atkinson-hyperlegible-next-latin-wght-italic.woff2') format('woff2');
+  font-weight: 200 800;
+  font-style: italic;
+  font-display: swap;
+}
+
+:root {
+  /* -------------------------------------------------------------------------
+   * Color: paleta base
+   * ---------------------------------------------------------------------- */
+  --color-violet-100: #f4e3f6;
+  --color-violet-300: #c38bcc;
+  --color-violet-600: #81078d; /* logo */
+  --color-violet-800: #52065a;
+
+  --color-teal-100: #d3ede9;
+  --color-teal-500: #0d8b7f; /* círculo de la "V": solo decorativo o texto grande */
+  --color-teal-700: #075e56; /* texto y botones */
+
+  --color-brick-500: #a14c38; /* ajedrez rojo de "Sobre mí" */
+  --color-brick-700: #85371f; /* texto sobre claro */
+
+  --color-mustard-300: #ffdb8a; /* franjas del logo */
+  --color-mustard-500: #f2a516; /* destellos */
+
+  --color-mauve-500: #957997; /* franjas del logo */
+  --color-sage-500: #5e8c85; /* franjas del logo */
+
+  --color-bone-50: #fff8e7; /* fondo general */
+  --color-cream-100: #fdf0d3;
+  --color-cream-200: #fae0ab; /* papel / recibo */
+  --color-cream-300: #f0cd8a;
+
+  --color-ink-900: #1b1218;
+  --color-ink-700: #342a32;
+  --color-ink-500: #5c4f58; /* texto secundario */
+  --color-white: #ffffff;
+
+  --color-wood-300: #a88a74;
+  --color-wood-500: #866e60;
+  --color-wood-700: #5c4636;
+  --color-wood-900: #33251d;
+
+  --color-cork-300: #c7a77f;
+  --color-cork-500: #a9794a;
+  --color-cork-700: #7a5532;
+
+  --color-chess-dark: #342a32;
+  --color-chess-light: #ddd8ce;
+
+  /* Tickets: un color por proyecto, tomado de los tickets originales. Texto siempre en tinta. */
+  --color-ticket-green: #94bd80;
+  --color-ticket-periwinkle: #9c9de0;
+  --color-ticket-teal: #6db3c4;
+  --color-ticket-salmon: #f09a7e;
+  --color-ticket-sage: #86b096;
+  --color-ticket-mustard: #f7cf74;
+
+  /* Jukebox (tomados de la ilustración de la rocola) */
+  --color-neon-blue: #5d63f0;
+  --color-neon-violet: #a64cf5;
+  --color-curtain-500: #9b1b1b;
+  --color-curtain-700: #6e0f10;
+  --color-curtain-900: #4a0a0b;
+  --color-brass-300: #f2d27a;
+  --color-brass-500: #c8962a;
+  --color-brass-700: #7c5a12;
+  --color-jukebox-wood: #b5793a;
+
+  /* Placeholders: azul "plano técnico", fuera de la paleta a propósito */
+  --color-placeholder: #1d43b8;
+  --color-placeholder-bg: #eef2ff;
+  --color-placeholder-stripe: #dfe6ff;
+
+  /* -------------------------------------------------------------------------
+   * Color: roles semánticos (usar estos en componentes)
+   * ---------------------------------------------------------------------- */
+  --color-bg: var(--color-bone-50);
+  --color-text: var(--color-ink-900);
+  --color-text-muted: var(--color-ink-500);
+  --color-heading: var(--color-ink-900);
+  --color-link: var(--color-violet-600);
+  --color-link-hover: var(--color-violet-800);
+  --color-accent: var(--color-teal-700);
+  --color-border: var(--color-ink-900);
+  --color-surface-paper: var(--color-cream-200);
+  --color-surface-raised: var(--color-cream-100);
+  --color-focus: var(--color-violet-600);
+  --color-focus-on-dark: var(--color-mustard-300);
+
+  /* -------------------------------------------------------------------------
+   * Tipografía
+   * ---------------------------------------------------------------------- */
+  /* Títulos, logo y etiquetas. Nunca para párrafos. */
+  --font-display: 'Vio Display', 'Rockwell', 'Roboto Slab', 'Georgia', serif;
+  /* Texto de lectura */
+  --font-body:
+    'Atkinson Hyperlegible Next', system-ui, -apple-system, 'Segoe UI', 'Roboto', 'Helvetica Neue',
+    Arial, sans-serif;
+  --font-mono: ui-monospace, 'SFMono-Regular', 'Cascadia Code', 'Menlo', 'Consolas', monospace;
+
+  /* Escala fluida 320 px → 1440 px. --step-0 ≈ 17–19 px (base de lectura). */
+  --step--2: clamp(0.8125rem, 0.7946rem + 0.0893vw, 0.875rem);
+  --step--1: clamp(0.9375rem, 0.9196rem + 0.0893vw, 1rem);
+  --step-0: clamp(1.0625rem, 1.0268rem + 0.1786vw, 1.1875rem);
+  --step-1: clamp(1.25rem, 1.1786rem + 0.3571vw, 1.5rem);
+  --step-2: clamp(1.5rem, 1.3571rem + 0.7143vw, 2rem);
+  --step-3: clamp(1.75rem, 1.4643rem + 1.4286vw, 2.75rem);
+  --step-4: clamp(2.125rem, 1.6607rem + 2.3214vw, 3.75rem);
+  --step-5: clamp(2.5rem, 1.7857rem + 3.5714vw, 5rem);
+
+  --leading-tight: 1.1;
+  --leading-snug: 1.3;
+  --leading-body: 1.6;
+
+  --tracking-label: 0.06em;
+  --tracking-display: 0.01em;
+
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 700;
+
+  --measure: 68ch;
+  --measure-narrow: 45ch;
+
+  /* -------------------------------------------------------------------------
+   * Espaciado (múltiplos de 4/8 px)
+   * ---------------------------------------------------------------------- */
+  --space-1: 0.25rem; /*  4 */
+  --space-2: 0.5rem; /*  8 */
+  --space-3: 0.75rem; /* 12 */
+  --space-4: 1rem; /* 16 */
+  --space-5: 1.5rem; /* 24 */
+  --space-6: 2rem; /* 32 */
+  --space-7: 3rem; /* 48 */
+  --space-8: 4rem; /* 64 */
+  --space-9: 6rem; /* 96 */
+  --space-10: 8rem; /* 128 */
+
+  --space-section: clamp(3rem, 2.4286rem + 2.8571vw, 5rem);
+  --gutter: clamp(1rem, 0.6429rem + 1.7857vw, 2rem);
+
+  /* -------------------------------------------------------------------------
+   * Layout
+   * ---------------------------------------------------------------------- */
+  --container-narrow: 46rem; /* 736 px: texto largo */
+  --container: 72rem; /* 1152 px: contenido general */
+  --container-wide: 84rem; /* 1344 px: grillas amplias */
+  --header-height: 4.5rem;
+  --tap-min: 44px; /* objetivo táctil mínimo (WCAG 2.5.8 / buena práctica 2.5.5) */
+
+  /*
+   * Breakpoints (referencia: las custom properties no funcionan dentro de @media,
+   * así que en los componentes se escriben los mismos valores en em).
+   */
+  --bp-sm: 36em; /* 576 px */
+  --bp-md: 48em; /* 768 px */
+  --bp-lg: 64em; /* 1024 px */
+  --bp-xl: 80em; /* 1280 px */
+
+  /* -------------------------------------------------------------------------
+   * Bordes y radios
+   * ---------------------------------------------------------------------- */
+  --border-thin: 2px;
+  --border-thick: 3px;
+  --border-ink: var(--border-thick) solid var(--color-border);
+  --border-dashed: var(--border-thin) dashed currentColor;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+
+  /* -------------------------------------------------------------------------
+   * Sombras: offset duras estilo retro + una suave para papel
+   * ---------------------------------------------------------------------- */
+  --shadow-color: var(--color-ink-900);
+  --shadow-hard-sm: 2px 2px 0 var(--shadow-color);
+  --shadow-hard-md: 4px 4px 0 var(--shadow-color);
+  --shadow-hard-lg: 8px 8px 0 var(--shadow-color);
+  --shadow-paper: 0 1px 1px rgb(27 18 24 / 0.12), 0 12px 24px -12px rgb(27 18 24 / 0.45);
+  /* Para elementos con máscara (tickets, papel rasgado): usar con `filter` */
+  --drop-hard-md: drop-shadow(4px 4px 0 var(--shadow-color));
+  --drop-paper: drop-shadow(0 10px 12px rgb(27 18 24 / 0.28));
+
+  /* -------------------------------------------------------------------------
+   * Capas
+   * ---------------------------------------------------------------------- */
+  --z-base: 0;
+  --z-raised: 10;
+  --z-sticky: 100;
+  --z-overlay: 200;
+  --z-skip-link: 1000;
+
+  /* -------------------------------------------------------------------------
+   * Movimiento (se anula con prefers-reduced-motion, abajo)
+   * ---------------------------------------------------------------------- */
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --hover-lift: -4px;
+  --hover-tilt: 0deg;
+
+  /* -------------------------------------------------------------------------
+   * Patrones (CSS puro, sin imágenes)
+   * ---------------------------------------------------------------------- */
+  --chess-size: 2rem;
+  --pattern-chess: repeating-conic-gradient(
+      var(--color-chess-dark) 0 25%,
+      var(--color-chess-light) 0 50%
+    )
+    0 0 / var(--chess-size) var(--chess-size);
+  --pattern-chess-red: repeating-conic-gradient(
+      var(--color-brick-500) 0 25%,
+      var(--color-bone-50) 0 50%
+    )
+    0 0 / var(--chess-size) var(--chess-size);
+  /* Franjas del marco del logo: malva, salvia, mostaza */
+  --stripe-width: 3rem;
+  --pattern-brand-stripes: repeating-linear-gradient(
+    90deg,
+    var(--color-mauve-500) 0 var(--stripe-width),
+    var(--color-sage-500) var(--stripe-width) calc(var(--stripe-width) * 2),
+    var(--color-mustard-300) calc(var(--stripe-width) * 2) calc(var(--stripe-width) * 3)
+  );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-base: 0ms;
+    --duration-slow: 0ms;
+    --hover-lift: 0px;
+    --hover-tilt: 0deg;
+  }
+}

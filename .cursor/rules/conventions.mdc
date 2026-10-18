@@ -1,0 +1,32 @@
+---
+description: Convenciones de código, nombres, commits y estructura de carpetas
+alwaysApply: true
+---
+
+# Convenciones
+
+- Nombres de archivos, componentes, props, variables y clases CSS en **inglés**. Componentes en `PascalCase.astro`; scripts y datos en `kebab-case.ts`/`camelCase`.
+- Comentarios, README y documentación en **español**, breves. Comentar solo restricciones o intenciones no obvias.
+- Cada componente documenta sus props en un bloque `/** ... */` al inicio del frontmatter.
+- Texto de interfaz: nunca escrito a mano en componentes; siempre desde `src/i18n/es.ts` (`import { t } from '@/i18n'`).
+- Datos del sitio (nombre, rol, correo, redes, disponibilidad, CV): solo en `src/data/site.ts`.
+- Alias de import `@/` → `src/`.
+- Ramas: trabajo en `rediseno`; no tocar `main` hasta el lanzamiento.
+- Commits pequeños con Conventional Commits (`feat:`, `fix:`, `style:`, `docs:`, `chore:`, `refactor:`).
+
+# Estructura
+
+```
+src/
+  assets/       imágenes fuente (procesadas por astro:assets)
+  components/   componentes .astro reutilizables
+  content/      colecciones (projects/*.mdx, awards.yaml)
+  data/         site.ts, navigation.ts, jukebox.ts, about.ts
+  i18n/         textos de interfaz
+  layouts/      BaseLayout, CaseStudyLayout
+  lib/          utilidades TS sin UI
+  pages/        rutas
+  scripts/      JS vanilla de cliente
+  styles/       tokens.css, base.css, surfaces.css
+_legacy/        sitio anterior (solo referencia, fuera del build)
+```

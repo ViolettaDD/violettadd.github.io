@@ -1,0 +1,176 @@
+---
+/**
+ * Button: botón o enlace con estilo de botón.
+ * Si recibe `href` se renderiza como <a>; si no, como <button>.
+ * Props:
+ * - variant?: 'primary' | 'secondary' | 'link'   (por defecto 'primary')
+ * - size?: 'md' | 'sm'                            (ambos cumplen 44 px de alto mínimo)
+ * - href?: string                                 destino; convierte el botón en enlace
+ * - external?: boolean                            abre en pestaña nueva y lo anuncia
+ * - type?: 'button' | 'submit' | 'reset'          solo para <button>
+ * - icon?: 'arrow' | 'download' | 'copy' | 'play' icono decorativo después del texto
+ * - class?: string
+ * Cualquier otro atributo (aria-*, data-*, download…) se pasa tal cual.
+ */
+import type { HTMLAttributes } from 'astro/types';
+import { t } from '@/i18n';
+
+type Variant = 'primary' | 'secondary' | 'link';
+type Icon = 'arrow' | 'download' | 'copy' | 'play';
+
+type Props = Omit<HTMLAttributes<'a'> & HTMLAttributes<'button'>, 'type'> & {
+  variant?: Variant;
+  size?: 'md' | 'sm';
+  href?: string;
+  external?: boolean;
+  type?: 'button' | 'submit' | 'reset';
+  icon?: Icon;
+  class?: string;
+};
+
+const {
+  variant = 'primary',
+  size = 'md',
+  href,
+  external = false,
+  type = 'button',
+  icon,
+  class: className,
+  ...rest
+} = Astro.props;
+
+const classes = ['btn', `btn--${variant}`, `btn--${size}`, className];
+const Tag = href ? 'a' : 'button';
+const linkAttrs = href
+  ? { href, ...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {}) }
+  : { type };
+
+const iconPaths: Record<Icon, string> = {
+  arrow: 'M5 12h13M13 6l6 6-6 6',
+  download: 'M12 4v11M7 10l5 5 5-5M5 20h14',
+  copy: 'M9 9h10v11H9zM5 15V4h10',
+  play: 'M8 5l11 7-11 7z',
+};
+---
+
+<Tag class:list={classes} {...linkAttrs} {...rest}>
+  <span class="btn__label"><slot /></span>
+  {
+    icon && (
+      <svg class:list={['btn__icon', `btn__icon--${icon}`]} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d={iconPaths[icon]} />
+      </svg>
+    )
+  }
+  {external && <span class="visually-hidden">{t.a11y.opensInNewTab}</span>}
+</Tag>
+
+<style>
+  .btn {
+    --btn-bg: var(--color-violet-600);
+    --btn-fg: var(--color-white);
+    --btn-border: var(--color-ink-900);
+    --btn-shadow: var(--shadow-hard-md);
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    min-height: var(--tap-min);
+    padding: var(--space-2) var(--space-5);
+    border: var(--border-thick) solid var(--btn-border);
+    border-radius: var(--radius-md);
+    background: var(--btn-bg);
+    color: var(--btn-fg);
+    box-shadow: var(--btn-shadow);
+    font-family: var(--font-display);
+    font-size: var(--step-0);
+    line-height: 1.2;
+    letter-spacing: var(--tracking-display);
+    text-align: center;
+    text-decoration: none;
+    transition:
+      transform var(--duration-fast) var(--ease-out),
+      box-shadow var(--duration-fast) var(--ease-out),
+      background-color var(--duration-fast) var(--ease-out);
+  }
+
+  .btn:hover {
+    color: var(--btn-fg);
+    transform: translate(-2px, -2px);
+    box-shadow: 6px 6px 0 var(--shadow-color);
+  }
+
+  .btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: var(--shadow-hard-sm);
+  }
+
+  .btn--sm {
+    min-height: var(--tap-min);
+    padding: var(--space-1) var(--space-4);
+    font-size: var(--step--1);
+  }
+
+  .btn--secondary {
+    --btn-bg: var(--color-bone-50);
+    --btn-fg: var(--color-ink-900);
+  }
+
+  .btn--secondary:hover {
+    --btn-bg: var(--color-cream-100);
+  }
+
+  .btn--link {
+    --btn-bg: transparent;
+    --btn-fg: var(--color-link);
+    --btn-border: transparent;
+    --btn-shadow: none;
+    padding-inline: var(--space-1);
+    text-decoration: underline;
+    text-decoration-thickness: 0.08em;
+    text-underline-offset: 0.2em;
+  }
+
+  .btn--link:hover,
+  .btn--link:active {
+    --btn-fg: var(--color-link-hover);
+    transform: none;
+    box-shadow: none;
+    text-decoration-thickness: 0.14em;
+  }
+
+  .btn__icon {
+    width: 1.1em;
+    height: 1.1em;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform var(--duration-fast) var(--ease-out);
+  }
+
+  .btn__icon--play {
+    fill: currentColor;
+  }
+
+  .btn:hover .btn__icon {
+    transform: translateX(2px);
+  }
+
+  /* Variantes sobre superficies oscuras */
+  :global(.on-dark) .btn--link {
+    --btn-fg: var(--color-mustard-300);
+  }
+
+  :global(.on-dark) .btn--link:hover {
+    --btn-fg: var(--color-white);
+  }
+
+  :global(.on-dark) .btn--primary,
+  :global(.on-dark) .btn--secondary {
+    --shadow-color: var(--color-ink-900);
+  }
+</style>
